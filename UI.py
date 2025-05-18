@@ -16,10 +16,10 @@ else:
     if not selected:
         st.sidebar.warning("請至少選擇一個 CSV 檔案")
     else:
-        # 讀取並合併所有選定的檔案
+        # 讀取並合併所有選定的檔案（同時解析 Date 欄位為 datetime）
         df_list = []
         for fname in selected:
-            df = pd.read_csv(fname, encoding='utf-8')
+            df = pd.read_csv(fname, encoding='utf-8', parse_dates=['Date'])
             asset_name = os.path.splitext(fname)[0]
             if 'Asset' not in df.columns:
                 df['Asset'] = asset_name
@@ -41,17 +41,38 @@ else:
         # 側邊設定權重
         assets = df['Asset'].unique().tolist()
         st.sidebar.header("設定配置比例 (總和需=1)")
-        weights = {asset: st.sidebar.slider(f"{asset} 比例", 0.0, 1.0, 1.0/len(assets), step=0.01) for asset in assets}
+        weights = {
+            asset: st.sidebar.slider(f"{asset} 比例", 0.0, 1.0, 1.0/len(assets), step=0.01)
+            for asset in assets
+        }
         total = sum(weights.values())
         if abs(total - 1.0) > 1e-6:
             st.sidebar.error("比例總和不等於 1，請調整")
         else:
             # 計算組合報酬
-            ret_series = [df[df['Asset']==asset]['Return'].dropna().reset_index(drop=True) for asset in assets]
+            ret_series = [
+                df[df['Asset']==asset]['Return'].dropna().reset_index(drop=True)
+                for asset in assets
+            ]
             min_len = min(len(s) for s in ret_series)
             aligned = np.vstack([s.values[-min_len:] for s in ret_series])
             w = np.array([weights[a] for a in assets])
             port_returns = w.dot(aligned)
+
+            # 取出對齊期間的日期序列
+            date_series = (
+                df[df['Asset']==assets[0]]['Date']
+                  .dropna()
+                  .reset_index(drop=True)
+                  .iloc[-min_len:]
+            )
+
+            # 計算累積報酬並包成 DataFrame，讓 Streamlit 自動以日期作為 X 軸
+            cum_returns = np.cumsum(port_returns)
+            port_df = pd.DataFrame(
+                {'累積報酬': cum_returns},
+                index=date_series
+            )
 
             # 顯示結果
             ann_ret = (port_returns.mean()+1)**252 - 1
@@ -62,4 +83,6 @@ else:
             st.write(f"年度化平均報酬率：{ann_ret*100:.2f}%")
             st.write(f"年度化波動度：{ann_vol*100:.2f}%")
             st.write(f"夏普比率 (無風險利率0)：{sharpe:.2f}")
-            st.line_chart(np.cumsum(port_returns))
+
+            # 以日期為 X 軸繪製累積報酬折線圖
+            st.line_chart(port_df)
