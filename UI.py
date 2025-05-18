@@ -77,7 +77,9 @@ else:
             df_plot = port_sr.cumsum().reset_index().rename(columns={'index':'Date', 'Portfolio':'Cumulative Return'})
 
             # —— 新增：互動式日期範圍選擇 —— #
-            df_plot['Date'] = pd.to_datetime(df_plot['Date'])
+            df_plot = port_sr.cumsum() \
+            .reset_index() \
+            .rename(columns={'index': 'Date', 'Portfolio': 'Cumulative Return'})
             # 先轉成 Python datetime，再取 date()
             min_date = df_plot['Date'].min().date()
             max_date = df_plot['Date'].max().date()
