@@ -83,6 +83,6 @@ else:
             st.write(f"年度化平均報酬率：{ann_ret*100:.2f}%")
             st.write(f"年度化波動度：{ann_vol*100:.2f}%")
             st.write(f"夏普比率 (無風險利率0)：{sharpe:.2f}")
-            port_df = port_df.loc["2005-05-18":"2025-05-16"]
+
             # 以日期為 X 軸繪製累積報酬折線圖
             st.line_chart(port_df)
