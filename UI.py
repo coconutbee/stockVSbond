@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
-import altair as alt
+import altair as alt  # 新增
 
 st.set_page_config(page_title="Portfolio Allocator", layout="centered")
 st.title("債券與股票配置計算器")
@@ -54,7 +54,7 @@ else:
             w = np.array([weights[a] for a in assets])
             port_returns = w.dot(aligned)
 
-            # 取出對齊期間的日期，並包成帶時間索引的 Series
+            # —— 取出對齊期間的日期，並包成帶時間索引的 Series —— #
             date_series = (
                 df[df['Asset']==assets[0]]['Date']
                   .dropna()
@@ -73,37 +73,16 @@ else:
             st.write(f"年度化波動度：{ann_vol*100:.2f}%")
             st.write(f"夏普比率 (無風險利率0)：{sharpe:.2f}")
 
-            # 準備繪圖資料
+            # —— 使用 Altair 自訂橫軸格式並固定 2005-2025 範圍 —— #
             df_plot = port_sr.cumsum().reset_index().rename(columns={'index':'Date', 'Portfolio':'Cumulative Return'})
-
-            # —— 新增：互動式日期範圍選擇 —— #
-            df_plot = port_sr.cumsum() \
-            .reset_index() \
-            .rename(columns={'index': 'Date', 'Portfolio': 'Cumulative Return'})
-            # 先轉成 Python datetime，再取 date()
-            min_date = df_plot['Date'].min().date()
-            max_date = df_plot['Date'].max().date()
-
-
-            start_date, end_date = st.sidebar.date_input(
-                "選擇圖表時間範圍",
-                (min_date, max_date),
-                min_value=min_date,
-                max_value=max_date
-            )
-
-            df_filtered = df_plot[
-                (df_plot['Date'].dt.date >= start_date) &
-                (df_plot['Date'].dt.date <= end_date)
-            ]
-            # 建立 Altair 圖表，橫軸顯示年/月/日，並套用互動式範圍
             chart = (
                 alt.Chart(df_plot)
                    .mark_line()
                    .encode(
                        x=alt.X(
                            'Date:T',
-                           axis=alt.Axis(format='%Y/%m/%d', title='年/月/日'),
+                           axis=alt.Axis(format='%Y/%m', title='年/月'),
+                           scale=alt.Scale(domain=['2005-05-18', '2025-05-16'])
                        ),
                        y=alt.Y('Cumulative Return:Q', axis=alt.Axis(title='累積報酬'))
                    )
