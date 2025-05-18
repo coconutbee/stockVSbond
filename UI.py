@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
-import altair as alt  # 新增
 
 st.set_page_config(page_title="Portfolio Allocator", layout="centered")
 st.title("債券與股票配置計算器")
@@ -17,10 +16,10 @@ else:
     if not selected:
         st.sidebar.warning("請至少選擇一個 CSV 檔案")
     else:
-        # 讀取並合併所有選定的檔案（解析 Date 欄位為 datetime）
+        # 讀取並合併所有選定的檔案
         df_list = []
         for fname in selected:
-            df = pd.read_csv(fname, encoding='utf-8', parse_dates=['Date'])
+            df = pd.read_csv(fname, encoding='utf-8')
             asset_name = os.path.splitext(fname)[0]
             if 'Asset' not in df.columns:
                 df['Asset'] = asset_name
@@ -54,38 +53,13 @@ else:
             w = np.array([weights[a] for a in assets])
             port_returns = w.dot(aligned)
 
-            # —— 取出對齊期間的日期，並包成帶時間索引的 Series —— #
-            date_series = (
-                df[df['Asset']==assets[0]]['Date']
-                  .dropna()
-                  .reset_index(drop=True)
-                  .iloc[-min_len:]
-            )
-            port_sr = pd.Series(port_returns, index=date_series, name='Portfolio')
-
             # 顯示結果
-            ann_ret = (port_sr.mean()+1)**252 - 1
-            ann_vol = port_sr.std() * np.sqrt(252)
+            ann_ret = (port_returns.mean()+1)**252 - 1
+            ann_vol = port_returns.std() * np.sqrt(252)
             sharpe = ann_ret / ann_vol if ann_vol else np.nan
 
             st.subheader("結果")
             st.write(f"年度化平均報酬率：{ann_ret*100:.2f}%")
             st.write(f"年度化波動度：{ann_vol*100:.2f}%")
             st.write(f"夏普比率 (無風險利率0)：{sharpe:.2f}")
-
-            # —— 使用 Altair 自訂橫軸格式並固定 2005-2025 範圍 —— #
-            df_plot = port_sr.cumsum().reset_index().rename(columns={'index':'Date', 'Portfolio':'Cumulative Return'})
-            chart = (
-                alt.Chart(df_plot)
-                   .mark_line()
-                   .encode(
-                       x=alt.X(
-                           'Date:T',
-                           axis=alt.Axis(format='%Y/%m', title='年/月'),
-                           scale=alt.Scale(domain=['2005-05-18', '2025-05-16'])
-                       ),
-                       y=alt.Y('Cumulative Return:Q', axis=alt.Axis(title='累積報酬'))
-                   )
-                   .properties(height=400)
-            )
-            st.altair_chart(chart, use_container_width=True)
+            st.line_chart(np.cumsum(port_returns))
