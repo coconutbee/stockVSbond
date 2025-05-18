@@ -78,8 +78,9 @@ else:
 
             # —— 新增：互動式日期範圍選擇 —— #
             # 先轉成 Python datetime，再取 date()
-            min_date = df_plot['Date'].min().to_pydatetime().date()
-            max_date = df_plot['Date'].max().to_pydatetime().date()
+            min_date = df_plot['Date'].dt.min().date()
+            max_date = df_plot['Date'].dt.max().date()
+
 
             start_date, end_date = st.sidebar.date_input(
                 "選擇圖表時間範圍",
