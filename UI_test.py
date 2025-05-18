@@ -55,7 +55,7 @@ bars = base.mark_bar(size=20)
 
 labels = base.mark_text(
     align='center',
-    dy=-8  # 往上偏移文字
+    dy=3  # 往上偏移文字
 ).transform_calculate(
     mid='(datum.start + datum.end) / 2'
 ).encode(
