@@ -92,6 +92,10 @@ else:
                 max_value=max_date
             )
 
+            df_filtered = df_plot[
+                (df_plot['Date'].dt.date >= start_date) &
+                (df_plot['Date'].dt.date <= end_date)
+            ]
             # 建立 Altair 圖表，橫軸顯示年/月/日，並套用互動式範圍
             chart = (
                 alt.Chart(df_plot)
@@ -100,7 +104,6 @@ else:
                        x=alt.X(
                            'Date:T',
                            axis=alt.Axis(format='%Y/%m/%d', title='年/月/日'),
-                           scale=alt.Scale(domain=[str(start_date), str(end_date)])
                        ),
                        y=alt.Y('Cumulative Return:Q', axis=alt.Axis(title='累積報酬'))
                    )
