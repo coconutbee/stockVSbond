@@ -77,8 +77,10 @@ else:
             df_plot = port_sr.cumsum().reset_index().rename(columns={'index':'Date', 'Portfolio':'Cumulative Return'})
 
             # —— 新增：互動式日期範圍選擇 —— #
-            min_date = df_plot['Date'].min().date()
-            max_date = df_plot['Date'].max().date()
+            # 先轉成 Python datetime，再取 date()
+            min_date = df_plot['Date'].min().to_pydatetime().date()
+            max_date = df_plot['Date'].max().to_pydatetime().date()
+
             start_date, end_date = st.sidebar.date_input(
                 "選擇圖表時間範圍",
                 (min_date, max_date),
