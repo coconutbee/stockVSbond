@@ -11,71 +11,66 @@ csv_files = [f for f in os.listdir('.') if f.lower().endswith('.csv')]
 if not csv_files:
     st.error("目前目錄下沒有 CSV 檔案，請放入至少一個 .csv 檔")
 else:
+    # 選取檔案
     selected = st.sidebar.multiselect("選擇要分析的 CSV 檔案", csv_files, default=csv_files)
     if not selected:
         st.sidebar.warning("請至少選擇一個 CSV 檔案")
     else:
+        # 讀取並合併所有選定的檔案（解析 Date 欄位為 datetime）
         df_list = []
         for fname in selected:
-            df = pd.read_csv(fname, encoding='utf-8', skipinitialspace=True)
-            df.columns = df.columns.str.strip().str.replace("'", "").str.replace(" ", "").str.lower()
+            df = pd.read_csv(fname, encoding='utf-8', parse_dates=['Date'])
             asset_name = os.path.splitext(fname)[0]
-            if 'asset' not in df.columns:
-                df['asset'] = asset_name
-
-            price_col = next((c for c in df.columns if 'price' in c), None)
-            div_col = next((c for c in df.columns if 'dividend' in c or 'div' in c), None)
-            if not price_col:
-                st.warning(f"在檔案 {fname} 找不到價格欄位，請確認欄位名稱包含 'Price'。")
-                continue
-            df[price_col] = df[price_col].astype(str).str.replace("'", "").str.replace(",", "").astype(float)
-            if div_col:
-                df[div_col] = df[div_col].astype(str).str.replace("'", "").str.replace(",", "").replace('', '0').astype(float)
+            if 'Asset' not in df.columns:
+                df['Asset'] = asset_name
+            # 清理 Price 與 Dividend 欄位並轉成數值
+            df['Price'] = df['Price'].astype(str).str.replace("'", "").str.replace(",", "").astype(float)
+            if 'Dividend' in df.columns:
+                df['Dividend'] = df['Dividend'].astype(str).str.replace("'", "").str.replace(",", "").fillna('0').astype(float)
             else:
-                df['dividend'] = 0.0
-                div_col = 'dividend'
+                df['Dividend'] = 0.0
+            df_list.append(df)
+        df = pd.concat(df_list, ignore_index=True)
 
-            df = df.rename(columns={price_col: 'price', div_col: 'dividend'})
-            if 'date' in df.columns:
-                df['date'] = pd.to_datetime(df['date'].astype(str).str.replace("'", ""), errors='coerce')
-            df_list.append(df[['asset', 'date', 'price', 'dividend']])
+        st.subheader("原始資料預覽")
+        st.dataframe(df)
 
-        if not df_list:
-            st.error("所有選擇的檔案皆無法解析。請檢查欄位格式。")
+        # 計算單位期間報酬率
+        df['Return'] = (df['Price'] + df['Dividend']) / df.groupby('Asset')['Price'].shift(1) - 1
+
+        # 側邊設定權重
+        assets = df['Asset'].unique().tolist()
+        st.sidebar.header("設定配置比例 (總和需=1)")
+        weights = {asset: st.sidebar.slider(f"{asset} 比例", 0.0, 1.0, 1.0/len(assets), step=0.01) for asset in assets}
+        total = sum(weights.values())
+        if abs(total - 1.0) > 1e-6:
+            st.sidebar.error("比例總和不等於 1，請調整")
         else:
-            df = pd.concat(df_list, ignore_index=True)
-            st.subheader("原始資料預覽")
-            st.dataframe(df)
+            # 計算組合報酬
+            ret_series = [df[df['Asset']==asset]['Return'].dropna().reset_index(drop=True) for asset in assets]
+            min_len = min(len(s) for s in ret_series)
+            aligned = np.vstack([s.values[-min_len:] for s in ret_series])
+            w = np.array([weights[a] for a in assets])
+            port_returns = w.dot(aligned)
 
-            df = df.sort_values(['asset', 'date'])
-            df['return'] = (df['price'] + df['dividend']) / df.groupby('asset')['price'].shift(1) - 1
-            assets = df['asset'].unique().tolist()
-            st.sidebar.header("設定配置比例 (總和需=1)")
-            weights = {a: st.sidebar.slider(a, 0.0, 1.0, 1.0/len(assets), 0.01) for a in assets}
-            total = sum(weights.values())
-            if abs(total-1)>1e-6:
-                st.sidebar.error("總和不為1")
-            else:
-                series_list = []
-                date_list = []
-                for a in assets:
-                    s = df[df['asset']==a][['date','return']].dropna().reset_index(drop=True)
-                    series_list.append(s['return'])
-                    date_list.append(s['date'])
-                minl = min(len(s) for s in series_list)
-                common_dates = date_list[0].values[-minl:]
-                mat = np.vstack([s.values[-minl:] for s in series_list])
-                w = np.array([weights[a] for a in assets])
-                pr = w.dot(mat)
-                cum_pr = np.cumsum(pr)
-                cum_series = pd.Series(cum_pr, index=common_dates)
+            # —— 新增：取出對齊期間的日期，並包成帶時間索引的 Series —— #
+            date_series = (
+                df[df['Asset']==assets[0]]['Date']
+                  .dropna()
+                  .reset_index(drop=True)
+                  .iloc[-min_len:]
+            )
+            port_returns = pd.Series(port_returns, index=date_series, name='Portfolio')
 
-                ann = (pr.mean()+1)**252-1
-                vol = pr.std()*np.sqrt(252)
-                sharpe = ann/vol if vol else np.nan
-                st.subheader("結果")
-                st.write(f"年度化報酬: {ann*100:.2f}%")
-                st.write(f"年度化波動: {vol*100:.2f}%")
-                st.write(f"夏普比率: {sharpe:.2f}")
-                # 繪製以日期為 x 軸的折線圖
-                st.line_chart(cum_series)
+            # 顯示結果
+            ann_ret = (port_returns.mean()+1)**252 - 1
+            ann_vol = port_returns.std() * np.sqrt(252)
+            sharpe = ann_ret / ann_vol if ann_vol else np.nan
+
+            st.subheader("結果")
+            st.write(f"年度化平均報酬率：{ann_ret*100:.2f}%")
+            st.write(f"年度化波動度：{ann_vol*100:.2f}%")
+            st.write(f"夏普比率 (無風險利率0)：{sharpe:.2f}")
+
+            # 使用時間索引繪製累積報酬折線圖
+            st.line_chart(port_returns.cumsum())
