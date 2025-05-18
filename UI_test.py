@@ -38,25 +38,32 @@ if min(w_20, w_1to3, w_spy) < 0:
 
 # 在 sidebar 顯示顏色分段條與百分比
 st.sidebar.subheader("🔸 資產配置分布")
+# 在 sidebar 顯示分段條形圖，並在每一段上方顯示百分比
 segments = pd.DataFrame([
     {"Asset": "20年以上公債", "start": 0.0,             "end": w_20,              "Allocation": w_20},
     {"Asset": "1~3年期公債", "start": w_20,            "end": w_20 + w_1to3,     "Allocation": w_1to3},
     {"Asset": "SPY 大盤股票","start": w_20 + w_1to3,   "end": 1.0,                "Allocation": w_spy}
 ])
-# 繪製堆疊條形圖
-bar = alt.Chart(segments).mark_bar(size=20).encode(
-    x=alt.X('start:Q', axis=alt.Axis(labels=False, ticks=False, domain=False)),
+
+base = alt.Chart(segments).encode(
+    x=alt.X('start:Q', axis=None, scale=alt.Scale(domain=[0,1])),
     x2='end:Q',
     color=alt.Color('Asset:N', legend=None)
 )
-# 在中點加上百分比文字
-text = alt.Chart(segments).mark_text(dy=-10, size=12).transform_calculate(
+
+bars = base.mark_bar(size=20)
+
+labels = base.mark_text(
+    align='center',
+    dy=-8  # 往上偏移文字
+).transform_calculate(
     mid='(datum.start + datum.end) / 2'
 ).encode(
-    x=alt.X('mid:Q', axis=None),
+    x=alt.X('mid:Q'),
     text=alt.Text('Allocation:Q', format='.0%')
 )
-st.sidebar.altair_chart((bar + text).properties(height=60), use_container_width=True)
+
+st.sidebar.altair_chart((bars + labels).properties(height=80), use_container_width=True)
 
 # 接下來載入資料、計算日報酬、累積報酬等（不變）
 @st.cache_data
