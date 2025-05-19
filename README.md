@@ -6,9 +6,6 @@
   <a href="https://stockvsbond.streamlit.app/" target="_blank">
     <img src="https://img.shields.io/badge/Launch%20App-Streamlit-success?logo=streamlit" alt="Launch App">
   </a>
-  <a href="#installation-and-usage">
-    <img src="https://img.shields.io/badge/Try%20Locally-Setup-blue?logo=python" alt="Try Locally">
-  </a>
 </p>
 
 Welcome to this repository! We aim to explore the optimal stock-to-bond allocation strategy.
@@ -72,7 +69,28 @@ stockVSbond/
 ## ⚠️Notes
  - The data used in this project is sourced from public datasets and is intended for academic research and educational purposes only.
  - Investing involves risks; the content of this project should not be considered as actual investment advice.
- 
+
+## 📊 Data Source
 <p align="center">
-  <img src="./repo_imgs/BUY_MORE.png" alt="preview" width="300"/>
+  <a href="https://hk.finance.yahoo.com/quote/TLT/history/?period1=1116374400&period2=1747526400" target="_blank">
+    <img src="https://img.shields.io/badge/View%20TLT%20Data-20Y%20Bond-blue?logo=yahoo" alt="TLT Data">
+  </a>
+  <a href="https://hk.finance.yahoo.com/quote/SHY/history/?period1=1116374400&period2=1747556692" target="_blank">
+    <img src="https://img.shields.io/badge/View%20SHY%20Data-1--3Y%20Bond-blueviolet?logo=yahoo" alt="SHY Data">
+  </a>
+  <a href="https://hk.finance.yahoo.com/quote/SPY/history/?period1=1116374400&period2=1747556014" target="_blank">
+    <img src="https://img.shields.io/badge/View%20SPY%20Data-Stock%20Index-success?logo=yahoo" alt="SPY Data">
+  </a>
 </p>
+We use publicly available historical data from [Yahoo Finance][1] for the following asset classes:
+
+- **TLT**: 20-Year Treasury Bond ETF  
+- **SHY**: 1–3 Year Treasury Bond ETF  
+- **SPY**: S&P 500 Stock Market Index ETF
+
+
+<p align="center">
+  <img src="./repo_imgs/never_loss.png" alt="preview" width="600"/>
+</p>
+
+[1]: https://finance.yahoo.com/
