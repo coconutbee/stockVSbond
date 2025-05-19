@@ -17,8 +17,8 @@ if not csv_files:
 # Sidebar：選擇三類資產的檔案
 st.sidebar.header("操作步驟:")
 st.sidebar.header("1️⃣ 選擇 CSV 檔案")
-file_20plus = st.sidebar.selectbox("20年以上公債 CSV 檔", csv_files, index=0)
-file_1to3   = st.sidebar.selectbox("1~3年期公債 CSV 檔", csv_files, index=1 if len(csv_files)>1 else 0)
+file_20plus = st.sidebar.selectbox("20年以上公債 CSV 檔", csv_files, index=1)
+file_1to3   = st.sidebar.selectbox("1~3年期公債 CSV 檔", csv_files, index=0 if len(csv_files)>1 else 0)
 file_spy    = st.sidebar.selectbox("SPY大盤股票 CSV 檔", csv_files, index=2 if len(csv_files)>2 else 0)
 
 # Sidebar：調整三資產配置比例（用單條 Range Slider 產生兩個分割點）
