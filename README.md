@@ -1,7 +1,8 @@
-# Stock VS Bond
+# Stock VS Bond  
 <p align="center">
   <a href="https://github.com/coconutbee/stockVSbond" target="_blank">
     <img src="https://img.shields.io/badge/GitHub-Repo-black?logo=github" alt="GitHub Repo">
+    <img src="https://img.shields.io/badge/🔥visits-10M-red" alt="visitors">
   </a>
   <a href="https://stockvsbond.streamlit.app/" target="_blank">
     <img src="https://img.shields.io/badge/Launch%20App-Streamlit-success?logo=streamlit" alt="Launch App">
@@ -93,4 +94,4 @@ We use publicly available historical data from [Yahoo Finance][1] for the follow
   <img src="./repo_imgs/never_loss.png" alt="preview" width="600"/>
 </p>
 
-[1]: https://finance.yahoo.com/
+[1]: (https://finance.yahoo.com/)
