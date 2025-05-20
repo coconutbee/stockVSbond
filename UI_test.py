@@ -155,29 +155,29 @@ else:
     sharpe_ratio = (ann_return - risk_free_rate) / ann_volatility
     st.markdown(f"<h4>🔸 夏普比率（Sharpe Ratio）: {sharpe_ratio:.2f}</h4> ", unsafe_allow_html=True)
     st.markdown(f"(無風險利率，假設 2%)")
+    base_value = df_period.iloc[0]['Cumulative Return']
 
 
 
-# 篩選該區間的資料
-df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)]
 
 st.subheader(f"📈 {start_year} ~ {end_year} 的累積報酬走勢")
 
 # 篩選區間資料
-df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)]
+df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)].copy()
 
-# Altair 線圖（自動縮放 Y 軸）
+df_chart['CumRetRebased'] = df_chart['Cumulative Return'] - base_value
+
 line = alt.Chart(df_chart).mark_line(color="steelblue").encode(
     x=alt.X("Date:T", title="日期"),
-    y=alt.Y("Cumulative Return:Q", title="累積報酬率", scale=alt.Scale(zero=False)),
+    y=alt.Y("CumRetRebased:Q", title="累積報酬率", scale=alt.Scale(zero=False)),
     tooltip=[
         alt.Tooltip("Date:T", title="日期"),
-        alt.Tooltip("Cumulative Return:Q", title="累積報酬", format=".2%")
+        alt.Tooltip("CumRetRebased:Q", title="累積報酬", format=".2%")
     ]
 ).properties(
     height=400,
     width="container"
-).interactive()  # 啟用放大縮小、游標追蹤
+).interactive()
 
 st.altair_chart(line, use_container_width=True)
 
