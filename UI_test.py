@@ -149,8 +149,13 @@ else:
 
     # 顯示結果
     st.markdown(f"✅ **{start_year} ~ {end_year}** 區間：")
-    st.markdown(f"<h4>🔹 年化報酬率（CAGR）: {ann_return:.2%}</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4>🔸 年化報酬率（CAGR）: {ann_return:.2%}</h4>", unsafe_allow_html=True)
     st.markdown(f"<h4>🔸 年化波動率（Volatility）: {ann_volatility:.2%}</h4>", unsafe_allow_html=True)
+    risk_free_rate = 0.02  # 無風險利率，例如 2%
+    sharpe_ratio = (ann_return - risk_free_rate) / ann_volatility
+    st.markdown(f"<h4>🔸 夏普比率（Sharpe Ratio）: {sharpe_ratio:.2f}</h4> ", unsafe_allow_html=True)
+    st.markdown(f"(無風險利率，假設 2%)")
+
 
 
 # 篩選該區間的資料
