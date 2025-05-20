@@ -163,7 +163,6 @@ else:
 st.subheader(f"📈 {start_year} ~ {end_year} 的累積報酬走勢")
 
 # 篩選區間資料
-<<<<<<< HEAD
 # 篩選區間資料
 df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)].copy()
 
@@ -181,27 +180,11 @@ line = alt.Chart(df_chart).mark_line().encode(
     x=alt.X("Date:T", title="日期"),
     y=alt.Y("CumRetRebased:Q", title="累積報酬率（已歸零）", 
             scale=alt.Scale(zero=False)),  # zero=False 可以让曲线跨零轴显示
-=======
-df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)].copy()
-
-df_chart['CumRetRebased'] = df_chart['Cumulative Return'] - base_value
-
-line = alt.Chart(df_chart).mark_line(color="steelblue").encode(
-    x=alt.X("Date:T", title="日期"),
-    y=alt.Y("CumRetRebased:Q", title="累積報酬率", scale=alt.Scale(zero=False)),
->>>>>>> 55314a6f0c3292a311053684bd5fb0c4e10c7068
     tooltip=[
         alt.Tooltip("Date:T", title="日期"),
         alt.Tooltip("CumRetRebased:Q", title="累積報酬", format=".2%")
     ]
-<<<<<<< HEAD
 ).properties(height=400, width="container").interactive()
-=======
-).properties(
-    height=400,
-    width="container"
-).interactive()
->>>>>>> 55314a6f0c3292a311053684bd5fb0c4e10c7068
 
 st.altair_chart(line, use_container_width=True)
 
