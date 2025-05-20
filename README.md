@@ -5,7 +5,7 @@
     <img src="https://img.shields.io/badge/🔥visits-10M-red" alt="visitors">
   </a>
   <a href="https://stockvsbond.streamlit.app/" target="_blank">
-    <img src="https://img.shields.io/badge/Launch%20App-Streamlit-success?logo=streamlit" alt="Launch App">
+    <img src="https://img.shields.io/badge/Stock%20Bond-Streamlit-success?logo=streamlit" alt="Stock Bond">
   </a>
 </p>
 
