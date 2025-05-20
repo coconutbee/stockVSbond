@@ -149,32 +149,45 @@ else:
 
     # 顯示結果
     st.markdown(f"✅ **{start_year} ~ {end_year}** 區間：")
-    st.markdown(f"<h4>🔹 年化報酬率（CAGR）: {ann_return:.2%}</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4>🔸 年化報酬率（CAGR）: {ann_return:.2%}</h4>", unsafe_allow_html=True)
     st.markdown(f"<h4>🔸 年化波動率（Volatility）: {ann_volatility:.2%}</h4>", unsafe_allow_html=True)
+    risk_free_rate = 0.02  # 無風險利率，例如 2%
+    sharpe_ratio = (ann_return - risk_free_rate) / ann_volatility
+    st.markdown(f"<h4>🔸 夏普比率（Sharpe Ratio）: {sharpe_ratio:.2f}</h4> ", unsafe_allow_html=True)
+    st.markdown(f"(無風險利率，假設 2%)")
+    base_value = df_period.iloc[0]['Cumulative Return']
 
 
-# 篩選該區間的資料
-df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)]
+
 
 st.subheader(f"📈 {start_year} ~ {end_year} 的累積報酬走勢")
 
 # 篩選區間資料
-df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)]
+# 篩選區間資料
+df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)].copy()
 
-# Altair 線圖（自動縮放 Y 軸）
-line = alt.Chart(df_chart).mark_line(color="steelblue").encode(
+# 1. 按日期排序，确保第一个索引就是起点年第一天
+df_chart = df_chart.sort_values('Date')
+
+# 2. 取该区间首日的累積報酬作為基準
+base_value = df_chart['Cumulative Return'].iloc[0]
+
+# 3. 整体平移：如果 base_value > 0，曲线下移；反之上移
+df_chart['CumRetRebased'] = df_chart['Cumulative Return'] - base_value
+
+# 接下來用 CumRetRebased 畫圖
+line = alt.Chart(df_chart).mark_line().encode(
     x=alt.X("Date:T", title="日期"),
-    y=alt.Y("Cumulative Return:Q", title="累積報酬率", scale=alt.Scale(zero=False)),
+    y=alt.Y("CumRetRebased:Q", title="累積報酬率（已歸零）", 
+            scale=alt.Scale(zero=False)),  # zero=False 可以让曲线跨零轴显示
     tooltip=[
         alt.Tooltip("Date:T", title="日期"),
-        alt.Tooltip("Cumulative Return:Q", title="累積報酬", format=".2%")
+        alt.Tooltip("CumRetRebased:Q", title="累積報酬", format=".2%")
     ]
-).properties(
-    height=400,
-    width="container"
-).interactive()  # 啟用放大縮小、游標追蹤
+).properties(height=400, width="container").interactive()
 
 st.altair_chart(line, use_container_width=True)
+
 
 
 metrics_df = pd.DataFrame(metrics).sort_values('Year')
@@ -186,4 +199,3 @@ st.dataframe(
       .format("{:.2%}")
 )
 # ----------------------------
-
