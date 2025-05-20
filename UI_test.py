@@ -124,6 +124,58 @@ for year, grp in df.groupby('Year'):
         '年度波動率': ann_vol_i
     })
 
+# 🎯 加入 Streamlit 年度範圍選擇器
+st.subheader("📆 自訂區間績效計算")
+
+min_year = df['Year'].min()
+max_year = df['Year'].max()
+start_year, end_year = st.slider("選擇起迄年份", min_value=int(min_year), max_value=int(max_year), value=(2010, 2020))
+
+# 篩選出該期間資料
+df_period = df[(df["Year"] >= start_year) & (df["Year"] <= end_year)]
+
+# 安全檢查：是否有資料
+if df_period.empty:
+    st.warning("❗ 選定的區間內無資料，請重新選擇年份")
+else:
+    # 總報酬率
+    total_return = (1 + df_period["PortRet"]).prod() - 1
+    # 有幾個交易日
+    n_days = len(df_period)
+    # 年化報酬率
+    ann_return = (1 + total_return) ** (252 / n_days) - 1
+    # 年化波動率
+    ann_volatility = df_period["PortRet"].std() * np.sqrt(252)
+
+    # 顯示結果
+    st.markdown(f"✅ **{start_year} ~ {end_year}** 區間：")
+    st.markdown(f"<h4>🔹 年化報酬率（CAGR）: {ann_return:.2%}</h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4>🔸 年化波動率（Volatility）: {ann_volatility:.2%}</h4>", unsafe_allow_html=True)
+
+
+# 篩選該區間的資料
+df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)]
+
+st.subheader(f"📈 {start_year} ~ {end_year} 的累積報酬走勢")
+
+# 篩選區間資料
+df_chart = df[(df['Year'] >= start_year) & (df['Year'] <= end_year)]
+
+# Altair 線圖（自動縮放 Y 軸）
+line = alt.Chart(df_chart).mark_line(color="steelblue").encode(
+    x=alt.X("Date:T", title="日期"),
+    y=alt.Y("Cumulative Return:Q", title="累積報酬率", scale=alt.Scale(zero=False)),
+    tooltip=[
+        alt.Tooltip("Date:T", title="日期"),
+        alt.Tooltip("Cumulative Return:Q", title="累積報酬", format=".2%")
+    ]
+).properties(
+    height=400,
+    width="container"
+).interactive()  # 啟用放大縮小、游標追蹤
+
+st.altair_chart(line, use_container_width=True)
+
 
 metrics_df = pd.DataFrame(metrics).sort_values('Year')
 st.subheader("📅 每自然年度的年化績效")
@@ -133,9 +185,5 @@ st.dataframe(
       .style
       .format("{:.2%}")
 )
-
-# 原本的累積報酬走勢（不動）
-st.subheader("📈 累積報酬走勢")
-st.line_chart(df.set_index('Date')['Cumulative Return'])
 # ----------------------------
 
