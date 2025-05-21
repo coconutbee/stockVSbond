@@ -33,12 +33,6 @@ w_20   = split1
 w_1to3 = split2 - split1
 w_spy  = 1.0 - split2
 
-# 3. 動態顯示
-st.sidebar.markdown(
-    f"**長期公債**：{w_20:.2%}  |  "
-    f"**短期公債**：{w_1to3:.2%}  |  "
-    f"**大盤股市**：{w_spy:.2%}"
-)
 
 # 防呆：三段比例應>=0
 if min(w_20, w_1to3, w_spy) < 0:
@@ -73,6 +67,14 @@ labels = base.mark_text(
 )
 
 st.sidebar.altair_chart((bars + labels).properties(height=80), use_container_width=True)
+
+
+# 3. 動態顯示
+st.sidebar.markdown(
+    f"**長期公債**：{w_20:.2%}  |  "
+    f"**短期公債**：{w_1to3:.2%}  |  "
+    f"**大盤股市**：{w_spy:.2%}"
+)
 
 # 接下來載入資料、計算日報酬、累積報酬等（不變）
 @st.cache_data
