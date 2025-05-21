@@ -192,12 +192,12 @@ line = alt.Chart(df_chart).mark_line(color="steelblue").encode(
 st.altair_chart(line, use_container_width=True)
 
 
-metrics_df = pd.DataFrame(metrics).sort_values('Year')
-st.subheader("📅 每自然年度的年化績效")
-st.dataframe(
-    metrics_df
-      .set_index('Year')
-      .style
-      .format("{:.2%}")
-)
+# metrics_df = pd.DataFrame(metrics).sort_values('Year')
+# st.subheader("📅 每自然年度的年化績效")
+# st.dataframe(
+#     metrics_df
+#       .set_index('Year')
+#       .style
+#       .format("{:.2%}")
+# )
 # ----------------------------
