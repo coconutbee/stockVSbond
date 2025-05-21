@@ -26,6 +26,7 @@ st.sidebar.header("2️⃣ 調整資產配置 (總和必須=1)")
 # 這裡用 range slider，value=(分點1, 分點2)，分別對應 20+、1~3、SPY 三段
 split1, split2 = st.sidebar.slider(
     "拖動兩端以設定資產間的分界點",
+    "長期公債 | 短期公債 | 大盤股市"
     0.0, 1.0, value=(0.33, 0.66), step=0.01
 )
 # 依照分割點計算三種資產的比例
