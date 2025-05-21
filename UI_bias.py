@@ -25,13 +25,20 @@ file_spy    = st.sidebar.selectbox("SPY大盤股票 CSV 檔", csv_files, index=2
 st.sidebar.header("2️⃣ 調整資產配置 (總和必須=1)")
 # 這裡用 range slider，value=(分點1, 分點2)，分別對應 20+、1~3、SPY 三段
 split1, split2 = st.sidebar.slider(
-    f"長期公債{split1} | 短期公債{split2 - split1} | 大盤股市{1.0 - split2}",
+    "調整資產配置 (使用一條 range slider)",
     0.0, 1.0, value=(0.33, 0.66), step=0.01
 )
 # 依照分割點計算三種資產的比例
 w_20   = split1
 w_1to3 = split2 - split1
 w_spy  = 1.0 - split2
+
+# 3. 動態顯示
+st.sidebar.markdown(
+    f"**長期公債**：{w_20:.2%}  |  "
+    f"**短期公債**：{w_1to3:.2%}  |  "
+    f"**大盤股市**：{w_spy:.2%}"
+)
 
 # 防呆：三段比例應>=0
 if min(w_20, w_1to3, w_spy) < 0:
