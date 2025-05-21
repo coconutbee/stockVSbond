@@ -71,8 +71,8 @@ st.sidebar.altair_chart((bars + labels).properties(height=80), use_container_wid
 
 # 3. 動態顯示
 st.sidebar.markdown(
-    f"**長期公債**：{w_20:.2%}  |  "
-    f"**短期公債**：{w_1to3:.2%}  |  "
+    f"**長期公債**：{w_20:.2%}  \n"
+    f"**短期公債**：{w_1to3:.2%}  \n"
     f"**大盤股市**：{w_spy:.2%}"
 )
 
